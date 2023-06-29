@@ -23,8 +23,10 @@
 /// </copyright>
 
 using SharpQuake.Framework.IO.Input;
+using OpenTK.Windowing.Desktop;
 using System;
 using System.Drawing;
+using OpenTK.Mathematics;
 
 namespace SharpQuake.Renderer.Desktop
 {
@@ -81,7 +83,7 @@ namespace SharpQuake.Renderer.Desktop
             set;
         }
 
-        public virtual Rectangle Bounds
+        public virtual Box2i Bounds
         {
             get;
             set;

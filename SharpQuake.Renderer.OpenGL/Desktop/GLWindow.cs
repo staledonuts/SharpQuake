@@ -24,20 +24,24 @@
 
 using System;
 using System.Drawing;
+using OpenTK.Windowing.Desktop;
+using OpenTK.Graphics.OpenGL;
+using OpenTK.Input;
 using SharpQuake.Renderer.Desktop;
 using SharpQuake.Framework.IO.Input;
+using OpenTK.Mathematics;
 
 namespace SharpQuake.Renderer.OpenGL.Desktop
 {
 	public class GLWindow : BaseWindow
     {
-        private OpenTK.GameWindow OpenTKWindow
+        private GameWindow OpenTKWindow
         {
             get;
             set;
         }
 
-        private OpenTK.DisplayDevice DisplayDevice
+        private MonitorInfo DisplayDevice
         {
             get;
             set;
@@ -50,10 +54,10 @@ namespace SharpQuake.Renderer.OpenGL.Desktop
             {
                 switch ( OpenTKWindow.VSync )
                 {
-                    case OpenTK.VSyncMode.On:
+                    case OpenTK.Windowing.Common.VSyncMode.On:
                         return VSyncMode.One;
 
-                    case OpenTK.VSyncMode.Adaptive:
+                    case OpenTK.Windowing.Common.VSyncMode.Adaptive:
                         return VSyncMode.Other;
                 }
 
@@ -64,15 +68,15 @@ namespace SharpQuake.Renderer.OpenGL.Desktop
                 switch ( value )
                 {
                     case VSyncMode.One:
-                        OpenTKWindow.VSync = OpenTK.VSyncMode.On;
+                        OpenTKWindow.VSync = OpenTK.Windowing.Common.VSyncMode.On;
                         break;
 
                     case VSyncMode.None:
-                        OpenTKWindow.VSync = OpenTK.VSyncMode.Off;
+                        OpenTKWindow.VSync = OpenTK.Windowing.Common.VSyncMode.Off;
                         break;
 
                     case VSyncMode.Other:
-                        OpenTKWindow.VSync = OpenTK.VSyncMode.Adaptive;
+                        OpenTKWindow.VSync = OpenTK.Windowing.Common.VSyncMode.Adaptive;
                         break;
                 }
             }
@@ -82,7 +86,7 @@ namespace SharpQuake.Renderer.OpenGL.Desktop
         {
             get
             {
-                return OpenTKWindow.Icon;
+                return Icon;
             }
             set
             {
@@ -94,39 +98,39 @@ namespace SharpQuake.Renderer.OpenGL.Desktop
         {
             get
             {
-                return OpenTKWindow.ClientSize;
+                return ClientSize;
             }
             set
             {
-                OpenTKWindow.ClientSize = value;
+                //ClientSize = value;
             }
         }
 
-        public override Boolean IsFullScreen
+        public override bool IsFullScreen
         {
             get
             {
-                return ( OpenTKWindow.WindowState == OpenTK.WindowState.Fullscreen );
+                return ( OpenTKWindow.WindowState == OpenTK.Windowing.Common.WindowState.Fullscreen );
             }
         }
 
-        public override Boolean Focused
+        public override bool Focused
         {
             get
             {
-                return OpenTKWindow.Focused;
+                return OpenTKWindow.IsFocused;
             }
         }
 
-        public override Boolean IsMinimised
+        public override bool IsMinimised
         {
             get
             {
-                return OpenTKWindow.WindowState == OpenTK.WindowState.Minimized;
+                return OpenTKWindow.WindowState == OpenTK.Windowing.Common.WindowState.Minimized;
             }
         }
 
-        public override Boolean CursorVisible
+        public override bool CursorVisible
         {
             get
             {
@@ -138,7 +142,7 @@ namespace SharpQuake.Renderer.OpenGL.Desktop
             }
         }
 
-        public override Rectangle Bounds
+        public override Box2i Bounds
         {
             get
             {
@@ -150,27 +154,26 @@ namespace SharpQuake.Renderer.OpenGL.Desktop
             }
         }
 
-        public override Boolean IsMouseActive
+        public override bool IsMouseActive
         {
             get
             {
-                return ( OpenTK.Input.Mouse.GetState( 0 ).IsConnected != false );
+                return ( OpenTKWindow.MouseState.( 0 ).IsConnected != false );
             }
         }
 
-        public GLWindow( String title, Size size, Boolean isFullScreen ) : base( title, size, isFullScreen )
+        public GLWindow( String title, Size size, bool isFullScreen ) : base( title, size, isFullScreen )
         {
             //Workaround for SDL2 mouse input issues
             var options = new OpenTK.ToolkitOptions( );
-            options.Backend = OpenTK.PlatformBackend.PreferNative;
+            options.Backend = OpenTK.Windowing.Desktop.NativeWindowSettings.PreferNative;
             options.EnableHighResolution = true; //Just for testing
             OpenTK.Toolkit.Init( options );
 
             // select display device
-            DisplayDevice = OpenTK.DisplayDevice.Default;
+            DisplayDevice = Monitors.GetPrimaryMonitor();
 
-            OpenTKWindow = new OpenTK.GameWindow( size.Width, size.Height, new OpenTK.Graphics.GraphicsMode( ),
-                title, isFullScreen ? OpenTK.GameWindowFlags.Fullscreen : OpenTK.GameWindowFlags.Default );
+            OpenTKWindow = new GameWindow( new(1, 1, 0), new() /*size.Width, size.Height, new OpenTK.Graphics.OpenGL.GraphicsMode( ), title, isFullScreen ? OpenTK.Windowing.Common.WindowState.Fullscreen : NativeWindowSettings.Default */);
             
             RouteEvents( );
 
@@ -250,7 +253,7 @@ namespace SharpQuake.Renderer.OpenGL.Desktop
             OpenTKWindow.SwapBuffers( );
         }
 
-        public override void SetFullScreen( Boolean isFullScreen )
+        public override void SetFullScreen( bool isFullScreen )
         {
             if ( isFullScreen )
             {
@@ -272,18 +275,17 @@ namespace SharpQuake.Renderer.OpenGL.Desktop
 
         public override void Exit( )
         {
-            OpenTKWindow.Exit( );
+            OpenTKWindow.Close( );
         }
 
         public override void SetMousePosition( Int32 x, Int32 y )
         {
-            OpenTK.Input.Mouse.SetPosition( x, y );
+            OpenTKWindow.MousePosition.Yx = new( x, y );
         }
 
         public override Point GetMousePosition( )
         {
-            return new Point( OpenTK.Input.Mouse.GetCursorState( ).X,
-                 OpenTK.Input.Mouse.GetCursorState( ).Y );
+            return new Point( (int)OpenTKWindow.MousePosition.X, (int)OpenTKWindow.MousePosition.Y);
         }
 
         public override void Dispose( )

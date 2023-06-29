@@ -6,11 +6,10 @@
     <ProjectReference Include="..\SharpQuake.Framework\SharpQuake.Framework.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
-    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
+    <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Properties\" />
+    <PackageReference Include="OpenTK" Version="4.7.7" />
+    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
   </ItemGroup>
 </Project>
